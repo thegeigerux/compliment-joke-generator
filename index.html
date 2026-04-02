@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A modern compliment generator that delivers warm, uplifting messages with favorites, copy, and share features."
+    />
+    <title>Compliment Generator</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #0b1020;
+        --surface: rgba(19, 26, 46, 0.8);
+        --surface-strong: #131a2e;
+        --primary: #7c3aed;
+        --secondary: #22d3ee;
+        --accent: #f59e0b;
+        --text: #f8fafc;
+        --muted: #a7b0c0;
+        --border: rgba(167, 176, 192, 0.16);
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+        --radius-xl: 28px;
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --max-width: 1180px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(124, 58, 237, 0.2), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.16), transparent 24%),
+          linear-gradient(180deg, #08101d 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible {
+        outline: 3px solid rgba(34, 211, 238, 0.9);
+        outline-offset: 3px;
+      }
+
+      .page-shell {
+        position: relative;
+        isolation: isolate;
+        width: min(100%, calc(var(--max-width) + 3rem));
+        margin: 0 auto;
+        padding: 2.25rem 1.5rem 3rem;
+      }
+
+      .bg-orb {
+        position: fixed;
+        border-radius: 999px;
+        filter: blur(70px);
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: -3;
+      }
+
+      .bg-orb-1 {
+        width: 18rem;
+        height: 18rem;
+        top: 7%;
+        left: 5%;
+        background: rgba(124, 58, 237, 0.35);
+      }
+
+      .bg-orb-2 {
+        width: 22rem;
+        height: 22rem;
+        right: 3%;
+        bottom: 8%;
+        background: rgba(34, 211, 238, 0.2);
+      }
+
+      .grid-overlay {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 75%);
+        pointer-events: none;
+        z-index: -4;
+      }
+
+      .hero {
+        max-width: 42rem;
+        padding: 2rem 0 1.5rem;
+      }
+
+      .eyebrow,
+      .section-label,
+      .compliment-tag {
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .eyebrow {
+        margin: 0 0 0.75rem;
+        color: var(--secondary);
+      }
+
+      .hero h1,
+      .card h2 {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.3rem, 6vw, 4.5rem);
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+        max-width: 12ch;
+      }
+
+      .hero-copy {
+        max-width: 42rem;
+        margin: 1rem 0 0;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1.35fr 0.9fr;
+        gap: 1.25rem;
+        align-items: start;
+      }
+
+      .card {
+        position: relative;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+        overflow: hidden;
+      }
+
+      .compliment-panel {
+        min-height: 34rem;
+        padding: 1.4rem;
+      }
+
+      .favorites-panel {
+        padding: 1.4rem;
+      }
+
+      .card-glow {
+        position: absolute;
+        inset: -40% auto auto 15%;
+        width: 16rem;
+        height: 16rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.2), transparent 60%);
+        pointer-events: none;
+      }
+
+      .panel-top {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 1rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .section-label {
+        margin: 0 0 0.35rem;
+        color: var(--secondary);
+      }
+
+      .card h2 {
+        font-size: 1.35rem;
+        letter-spacing: -0.03em;
+      }
+
+      .icon-button {
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        background: rgba(245, 158, 11, 0.08);
+        color: var(--accent);
+        width: 3rem;
+        height: 3rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+      }
+
+      .icon-button:hover {
+        transform: translateY(-1px);
+        background: rgba(245, 158, 11, 0.14);
+        border-color: rgba(245, 158, 11, 0.45);
+      }
+
+      .icon-button.is-saved {
+        background: rgba(245, 158, 11, 0.2);
+        border-color: rgba(245, 158, 11, 0.55);
+      }
+
+      .compliment-frame {
+        position: relative;
+        margin-top: 1.35rem;
+        padding: 1.4rem;
+        min-height: 18.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: calc(var(--radius-xl) - 8px);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+          rgba(11, 16, 32, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .compliment-tag {
+        margin: 0 0 1rem;
+        color: var(--accent);
+      }
+
+      .compliment-text {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: clamp(1.8rem, 3.4vw, 3.3rem);
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+        max-width: 14ch;
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+        transition: opacity 260ms ease, transform 260ms ease;
+      }
+
+      .compliment-text.is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-top: 1.15rem;
+      }
+
+      .button {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: 0.95rem 1.25rem;
+        font-weight: 700;
+        min-height: 3rem;
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          border-color 180ms ease,
+          background-color 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button-primary {
+        color: var(--text);
+        background: linear-gradient(135deg, var(--primary), #5b21b6);
+        box-shadow: 0 16px 40px rgba(124, 58, 237, 0.35);
+      }
+
+      .button-secondary {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .button-secondary:hover {
+        border-color: rgba(34, 211, 238, 0.4);
+        box-shadow: 0 10px 25px rgba(34, 211, 238, 0.12);
+      }
+
+      .helper-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+
+      .helper-text,
+      .counter,
+      .status-message,
+      .empty-state span,
+      .favorite-copy,
+      .favorite-remove,
+      .favorites-count {
+        color: var(--muted);
+      }
+
+      .helper-text,
+      .counter,
+      .status-message,
+      .empty-state,
+      .favorite-text,
+      .favorite-copy,
+      .favorite-remove,
+      .favorites-count {
+        font-size: 0.95rem;
+      }
+
+      .helper-text,
+      .counter,
+      .status-message,
+      .empty-state,
+      .favorite-text,
+      .favorite-actions {
+        line-height: 1.6;
+      }
+
+      .helper-text,
+      .counter,
+      .status-message,
+      .empty-state,
+      .favorite-text,
+      .favorite-actions,
+      .empty-state p,
+      .empty-state span {
+        margin: 0;
+      }
+
+      .status-message {
+        min-height: 1.6rem;
+        margin-top: 0.85rem;
+      }
+
+      .favorites-top {
+        align-items: center;
+      }
+
+      .favorites-count {
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        white-space: nowrap;
+      }
+
+      .empty-state {
+        margin-top: 1.25rem;
+        padding: 1.25rem;
+        border-radius: var(--radius-lg);
+        border: 1px dashed rgba(167, 176, 192, 0.25);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .empty-state p {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .empty-state span {
+        display: block;
+        margin-top: 0.4rem;
+      }
+
+      .favorites-list {
+        list-style: none;
+        padding: 0;
+        margin: 1.2rem 0 0;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .favorite-item {
+        padding: 1rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(11, 16, 32, 0.48);
+      }
+
+      .favorite-text {
+        color: var(--text);
+      }
+
+      .favorite-actions {
+        display: flex;
+        gap: 0.9rem;
+        margin-top: 0.75rem;
+      }
+
+      .favorite-actions button {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font-weight: 600;
+      }
+
+      .favorite-actions button:hover {
+        color: var(--secondary);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .compliment-panel {
+          min-height: auto;
+        }
+
+        .compliment-frame {
+          min-height: 15rem;
+        }
+
+        .compliment-text {
+          max-width: 100%;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page-shell {
+          padding: 1.1rem 1rem 2rem;
+        }
+
+        .hero {
+          padding-top: 1.2rem;
+        }
+
+        .hero-copy {
+          font-size: 1rem;
+        }
+
+        .card,
+        .compliment-frame,
+        .favorite-item,
+        .empty-state {
+          border-radius: 22px;
+        }
+
+        .compliment-panel,
+        .favorites-panel {
+          padding: 1rem;
+        }
+
+        .panel-top,
+        .helper-row,
+        .favorites-top {
+          align-items: flex-start;
+        }
+
+        .actions {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .button {
+          width: 100%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="bg-orb bg-orb-1" aria-hidden="true"></div>
+      <div class="bg-orb bg-orb-2" aria-hidden="true"></div>
+      <div class="grid-overlay" aria-hidden="true"></div>
+
+      <header class="hero" role="banner">
+        <p class="eyebrow">Feel-good app</p>
+        <h1>Compliments that actually sound human.</h1>
+        <p class="hero-copy">
+          A polished little boost for rough days, quiet wins, and everything in between.
+          Tap once and get a compliment worth keeping.
+        </p>
+      </header>
+
+      <main class="layout" id="main-content">
+        <section class="card compliment-panel" aria-labelledby="compliment-heading">
+          <div class="card-glow" aria-hidden="true"></div>
+
+          <div class="panel-top">
+            <div>
+              <p class="section-label">Today’s energy</p>
+              <h2 id="compliment-heading">Your compliment</h2>
+            </div>
+            <button
+              id="save-current-btn"
+              class="icon-button"
+              type="button"
+              aria-label="Save current compliment to favorites"
+              title="Save this compliment"
+            >
+              <span aria-hidden="true">★</span>
+            </button>
+          </div>
+
+          <div class="compliment-frame">
+            <p class="compliment-tag">Freshly generated</p>
+            <blockquote
+              id="compliment-text"
+              class="compliment-text is-visible"
+              tabindex="-1"
+            >
+              You have a steady kind of brilliance that makes things feel calmer the moment you show up.
+            </blockquote>
+          </div>
+
+          <div class="actions" aria-label="Compliment actions">
+            <button id="generate-btn" class="button button-primary" type="button">
+              Generate compliment
+            </button>
+            <button id="copy-btn" class="button button-secondary" type="button">
+              Copy
+            </button>
+            <button id="share-btn" class="button button-secondary" type="button">
+              Share
+            </button>
+          </div>
+
+          <div class="helper-row">
+            <p class="helper-text" id="helper-text">
+              Save the ones that hit a little too hard, in a good way.
+            </p>
+            <p class="counter" id="counter-text" aria-live="polite">
+              0 saved favorites
+            </p>
+          </div>
+
+          <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>
+          <p class="status-message" id="status-message" role="status" aria-live="polite"></p>
+        </section>
+
+        <aside class="card favorites-panel" aria-labelledby="favorites-heading">
+          <div class="panel-top favorites-top">
+            <div>
+              <p class="section-label">Keepers</p>
+              <h2 id="favorites-heading">Saved favorites</h2>
+            </div>
+            <span class="favorites-count" id="favorites-count" aria-live="polite">0 saved</span>
+          </div>
+
+          <div id="favorites-empty-state" class="empty-state">
+            <p>No favorites yet.</p>
+            <span>
+              When a compliment makes you smile, save it here for later.
+            </span>
+          </div>
+
+          <ul id="favorites-list" class="favorites-list" aria-label="Saved compliment favorites"></ul>
+        </aside>
+      </main>
+    </div>
+
+    <template id="favorite-item-template">
+      <li class="favorite-item">
+        <p class="favorite-text"></p>
+        <div class="favorite-actions">
+          <button class="favorite-copy" type="button">Copy</button>
+          <button class="favorite-remove" type="button">Remove</button>
+        </div>
+      </li>
+    </template>
+
+    <script>
+      const compliments = [
+        "You have a steady kind of brilliance that makes things feel calmer the moment you show up.",
+        "Your presence has the emotional equivalent of good lighting and a clean playlist.",
+        "You make effort look graceful, even when life is clearly being a little dramatic.",
+        "You have the rare ability to make people feel seen without making it a big performance.",
+        "Your brain is doing some very elegant work behind the scenes, and it shows.",
+        "You carry a quiet kind of strength that people trust almost instantly.",
+        "You are proof that warmth and depth can exist in the same sentence.",
+        "There is something deeply reassuring about the way you move through the world.",
+        "Your taste is suspiciously good. Like, annoyingly refined in the best way.",
+        "You make thoughtful look cool, which is honestly a public service.",
+        "You have the kind of energy that makes people unclench a little.",
+        "The way you care has texture. It feels real, not performative.",
+        "You are more impactful than you probably realize on your tired days.",
+        "You make intelligence feel welcoming instead of intimidating.",
+        "You have a low-key magnetic quality that sneaks up on people.",
+        "Your resilience has style. Not loud, not forced, just solid.",
+        "You make ordinary interactions feel a little more human.",
+        "You have a beautifully specific spark. Not generic, not copy-paste. Fully yours.",
+        "You seem like the kind of person who makes even awkward moments survivable.",
+        "Your perspective adds depth to rooms that would otherwise feel flatter.",
+        "You are quietly unforgettable, which is somehow even more impressive.",
+        "You bring the kind of energy that says, we are going to figure this out.",
+        "You have a comforting kind of confidence. Strong, but never showy.",
+        "You make sincerity feel refreshing instead of cheesy. That is a gift.",
+        "Your existence improves the vibe more than most people’s entire personality strategy.",
+        "You have a way of making people feel less alone without needing a grand speech.",
+        "You look like someone who has survived a lot and still kept your softness.",
+        "Your mind clearly has range, and your heart somehow kept up.",
+        "You have the emotional equivalent of a perfectly timed deep breath.",
+        "You are the kind of person people remember when they need hope with better branding."
+      ];
+
+      const FAVORITES_KEY = "compliment-generator-favorites";
+      const HISTORY_LIMIT = 5;
+
+      const complimentText = document.getElementById("compliment-text");
+      const generateBtn = document.getElementById("generate-btn");
+      const copyBtn = document.getElementById("copy-btn");
+      const shareBtn = document.getElementById("share-btn");
+      const saveCurrentBtn = document.getElementById("save-current-btn");
+      const favoritesList = document.getElementById("favorites-list");
+      const favoritesEmptyState = document.getElementById("favorites-empty-state");
+      const favoritesCount = document.getElementById("favorites-count");
+      const statusMessage = document.getElementById("status-message");
+      const liveRegion = document.getElementById("live-region");
+      const helperText = document.getElementById("helper-text");
+      const counterText = document.getElementById("counter-text");
+      const favoriteTemplate = document.getElementById("favorite-item-template");
+
+      let currentCompliment = complimentText.textContent.trim();
+      let recentHistory = [currentCompliment];
+      let favorites = loadFavorites();
+
+      renderFavorites();
+      updateSavedButtonState();
+      updateCounter();
+
+      function loadFavorites() {
+        try {
+          const storedFavorites = localStorage.getItem(FAVORITES_KEY);
+          return storedFavorites ? JSON.parse(storedFavorites) : [];
+        } catch (error) {
+          console.error("Could not load favorites from localStorage.", error);
+          return [];
+        }
+      }
+
+      function saveFavorites() {
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+      }
+
+      function getRandomCompliment() {
+        const availableCompliments = compliments.filter(
+          (compliment) => !recentHistory.includes(compliment)
+        );
+
+        const pool = availableCompliments.length > 0 ? availableCompliments : compliments;
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        return pool[randomIndex];
+      }
+
+      function updateHistory(compliment) {
+        recentHistory.push(compliment);
+
+        if (recentHistory.length > HISTORY_LIMIT) {
+          recentHistory.shift();
+        }
+      }
+
+      function showStatus(message) {
+        statusMessage.textContent = message;
+      }
+
+      function updateCounter() {
+        counterText.textContent = `${favorites.length} saved favorite${
+          favorites.length === 1 ? "" : "s"
+        }`;
+      }
+
+      function updateSavedButtonState() {
+        const isSaved = favorites.includes(currentCompliment);
+        saveCurrentBtn.classList.toggle("is-saved", isSaved);
+        saveCurrentBtn.setAttribute(
+          "aria-label",
+          isSaved
+            ? "Current compliment is saved in favorites"
+            : "Save current compliment to favorites"
+        );
+        saveCurrentBtn.setAttribute(
+          "title",
+          isSaved ? "Already saved" : "Save this compliment"
+        );
+      }
+
+      function setCompliment(newCompliment) {
+        complimentText.classList.remove("is-visible");
+
+        window.setTimeout(() => {
+          currentCompliment = newCompliment;
+          complimentText.textContent = newCompliment;
+          complimentText.classList.add("is-visible");
+          liveRegion.textContent = `New compliment: ${newCompliment}`;
+          helperText.textContent = "That one had some main-character energy.";
+          updateSavedButtonState();
+        }, 120);
+      }
+
+      function renderFavorites() {
+        favoritesList.innerHTML = "";
+        favoritesCount.textContent = `${favorites.length} saved`;
+        favoritesEmptyState.hidden = favorites.length > 0;
+
+        favorites.forEach((favorite) => {
+          const fragment = favoriteTemplate.content.cloneNode(true);
+          const favoriteText = fragment.querySelector(".favorite-text");
+          const copyFavoriteBtn = fragment.querySelector(".favorite-copy");
+          const removeFavoriteBtn = fragment.querySelector(".favorite-remove");
+
+          favoriteText.textContent = favorite;
+
+          copyFavoriteBtn.setAttribute("aria-label", `Copy saved compliment: ${favorite}`);
+          removeFavoriteBtn.setAttribute("aria-label", `Remove saved compliment: ${favorite}`);
+
+          copyFavoriteBtn.addEventListener("click", async () => {
+            await copyToClipboard(favorite);
+            showStatus("Saved compliment copied.");
+          });
+
+          removeFavoriteBtn.addEventListener("click", () => {
+            favorites = favorites.filter((item) => item !== favorite);
+            saveFavorites();
+            renderFavorites();
+            updateSavedButtonState();
+            updateCounter();
+            showStatus("Removed from favorites.");
+          });
+
+          favoritesList.appendChild(fragment);
+        });
+      }
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (error) {
+          const tempTextArea = document.createElement("textarea");
+          tempTextArea.value = text;
+          document.body.appendChild(tempTextArea);
+          tempTextArea.select();
+          document.execCommand("copy");
+          tempTextArea.remove();
+        }
+      }
+
+      function saveCurrentCompliment() {
+        if (favorites.includes(currentCompliment)) {
+          showStatus("Already saved. Your excellent taste remains confirmed.");
+          return;
+        }
+
+        favorites.unshift(currentCompliment);
+        saveFavorites();
+        renderFavorites();
+        updateSavedButtonState();
+        updateCounter();
+        showStatus("Saved to favorites.");
+      }
+
+      generateBtn.addEventListener("click", () => {
+        const nextCompliment = getRandomCompliment();
+        updateHistory(nextCompliment);
+        setCompliment(nextCompliment);
+        showStatus("Fresh compliment loaded.");
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        await copyToClipboard(currentCompliment);
+        showStatus("Compliment copied to clipboard.");
+      });
+
+      shareBtn.addEventListener("click", async () => {
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: "A compliment for you",
+              text: currentCompliment
+            });
+            showStatus("Compliment shared.");
+            return;
+          } catch (error) {
+            if (error.name === "AbortError") {
+              showStatus("Share canceled.");
+              return;
+            }
+          }
+        }
+
+        await copyToClipboard(currentCompliment);
+        showStatus("Share is not available here, so the compliment was copied instead.");
+      });
+
+      saveCurrentBtn.addEventListener("click", saveCurrentCompliment);
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target.tagName === "BUTTON") {
+          return;
+        }
+
+        if (event.code === "Space") {
+          event.preventDefault();
+          generateBtn.click();
+        }
+
+        if (event.key.toLowerCase() === "s") {
+          saveCurrentBtn.click();
+        }
+      });
+    </script>
+  </body>
+</html>
